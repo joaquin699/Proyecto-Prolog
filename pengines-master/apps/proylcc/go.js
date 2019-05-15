@@ -9,11 +9,9 @@ var cellElems;
 var turnBlack = false;
 var bodyElem;
 var latestStone;
-var cantFichasNegras;
-var cantFichasBlancas;
+var cantFichasNegras,cantFichasBlancas;
 var turnosPasados;
-var territorioBlanco;
-var territorioNegro;
+var puntajeN, puntajeB;
 var finalizar;
 
 
@@ -83,16 +81,16 @@ function handleCreate() {
 
 function handleSuccess(response) {
     if(finalizar){
-        territorioNegro= response.data[0].PuntajeNegras;
-        territorioBlanco= response.data[0].PuntajeBlancas;
+        var territorioNegro= response.data[0].PuntajeNegras;
+        var territorioBlanco= response.data[0].PuntajeBlancas;
 
-        var puntajeN= territorioNegro.length;
-        var puntajeB= territorioBlanco.length;
+        puntajeN= territorioNegro.length;
+        puntajeB= territorioBlanco.length;
 
         puntajeN+= cantFichasNegras;
         puntajeB+= cantFichasBlancas;
-        alert("Puntaje Blancas= "+puntajeB+"\nPuntaje Negras= "+puntajeN);
-        handleCreate();
+        alert("Estoy en Finalizar");
+        imprimirPuntajes();
     }
     else{
         cantFichasNegras=0;
@@ -151,10 +149,32 @@ function pasarTurnoTablero(){
 function finalizarJuego(){
     finalizar= true;
     const puntaje= "contarPuntaje(" + Pengine.stringify(gridData) + ",PuntajeBlancas,PuntajeNegras)";
-    pengine.ask(puntaje);
+    if(cantFichasNegras==0 && cantFichasBlancas==0){
+      puntajeB=0;
+      puntajeN=0;
+      imprimirPuntajes();
+    }
+    else{
+      pengine.ask(puntaje);
+    }
     turnosPasados=0;
     if(!turnBlack)
       pasarTurnoTablero();
+}
+
+function imprimirPuntajes(){
+    if(cantFichasNegras>cantFichasBlancas){
+        alert("GANO JUGADOR NEGRO \nPuntaje= "+puntajeN);
+    }
+    else{
+        if(cantFichasBlancas>cantFichasNegras){
+            alert("GANO JUGADOR BLANCO \nPuntaje= "+puntajeB);
+        }
+        else{
+            alert("EMPATE \nPuntaje Negro= "+puntajeN+"\nPuntaje Blanco= "+puntajeB);
+        }
+    }
+    handleCreate();
 }
 
 
