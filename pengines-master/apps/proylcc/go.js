@@ -158,8 +158,6 @@ function finalizarJuego(){
       pengine.ask(puntaje);
     }
     turnosPasados=0;
-    if(!turnBlack)
-      pasarTurnoTablero();
 }
 
 function imprimirPuntajes(){
@@ -174,7 +172,10 @@ function imprimirPuntajes(){
             alert("EMPATE \nPuntaje Negro= "+puntajeN+"\nPuntaje Blanco= "+puntajeB);
         }
     }
+    turnBlack= false;
+    bodyElem.className = turnBlack ? "turnBlack" : "turnWhite";
     handleCreate();
+
 }
 
 
