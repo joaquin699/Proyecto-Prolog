@@ -34,7 +34,6 @@ emptyBoard([
 		 ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"]
 		 ]).
 
-
 %
 % goMove(+Board, +Player, +Pos, -RBoard)
 %
@@ -42,7 +41,7 @@ emptyBoard([
 % en la posición Pos a partir de la configuración Board.
 goMove(Board, Player, [R,C], RBoard):-
 		replace(Row, R, NRow, Board, TableroTemporal),
-  	replace("-", C, Player, Row, NRow),
+		replace("-", C, Player, Row, NRow),
 		obtenerPosicionesAdyacentes([R,C],AdyacentesPlayer),
 		obtenerColorContrario(Player,ColorContrario),
 		obtenerFichasCapturadas(TableroTemporal,AdyacentesPlayer,ColorContrario,Player,FichasCapturadas),
@@ -65,9 +64,9 @@ goMove(Board,Player,[R,C],RBoard):-
 %
 replace(X, 0, Y, [X|Xs], [Y|Xs]).
 replace(X, XIndex, Y, [Xi|Xs], [Xi|XsY]):-
-  XIndex > 0,
-  XIndexS is XIndex - 1,
-  replace(X, XIndexS, Y, Xs, XsY).
+		XIndex > 0,
+		XIndexS is XIndex - 1,
+		replace(X, XIndexS, Y, Xs, XsY).
 
 %
 %	unirConjuntos(+C1,+C2,-C)
@@ -181,7 +180,6 @@ sePuedeCapturar(Board,[Pos|Adyacentes],Rodeado,ColorRodeador):-
 conjuntoCapturado(Board,Pos,PosicionesVisitadas,Rodeado,ColorRodeador,TotalVisitadas,FichasCapturadas):-
 		obtenerPosicionesAdyacentes(Pos,PosicionesAdyacentes),
 		sePuedeCapturar(Board,PosicionesAdyacentes,Rodeado,ColorRodeador),
-		asserta(fichaVisitada(Pos)),
 		analizarPosicionesAdyacentes(Board,PosicionesAdyacentes,[Pos|PosicionesVisitadas],Rodeado,ColorRodeador,TotalVisitadas,FichasCapturadas1),
 		FichasCapturadas= [Pos|FichasCapturadas1].
 
@@ -202,8 +200,7 @@ estaCapturada(Board,Pos,PosicionesVisitadas,_Rodeado,ColorRodeador,TotalVisitada
 		TotalVisitadas=[Pos|PosicionesVisitadas].
 estaCapturada(Board,Pos,PosicionesVisitadas,Rodeado,_ColorRodeador,PosicionesVisitadas,[]):-
 		member(Pos,PosicionesVisitadas),
-		obtenerContenidoDePosicion(Board,Pos,Rodeado),
-		asserta(fichaVisitada(Pos)).
+		obtenerContenidoDePosicion(Board,Pos,Rodeado).
 estaCapturada(Board,Pos,PosicionesVisitadas,Rodeado,ColorContrario,TotalVisitadas,FichasCapturadas):-
 		not(member(Pos,PosicionesVisitadas)),
 		obtenerContenidoDePosicion(Board,Pos,Rodeado),
@@ -242,23 +239,36 @@ siguientePosicion([F,C],[F,C1]):-
 % buscarNulas(+Board,+Pos,-ListaPosicionesNulas)
 %
 % Retorna las posiciones Nulas del tablero
-buscarNulas(Board,[18,18],[[18,18]]):-
-		obtenerContenidoDePosicion(Board,[18,18],"-").
-buscarNulas(Board,[18,18],[]):-
-		obtenerContenidoDePosicion(Board,[18,18],Contenido),
-		Contenido\= "-".
-buscarNulas(Board,[R,C],Lista):-
+buscarNulas(Board,[18,18],MiColor,ListaNulas):-
+		obtenerContenidoDePosicion(Board,[18,18],"-"),
+		obtenerPosicionesAdyacentes([18,18],Adyacentes),
+		verificarColorAdyacentes(Board,MiColor,Adyacentes),
+		ListaNulas=[[18,18]].
+
+buscarNulas(_,[18,18],_,[]).
+
+buscarNulas(Board,[R,C],MiColor,ListaNulas):-
 		[R,C]\=[18,18],
 		obtenerContenidoDePosicion(Board,[R,C],"-"),
+		obtenerPosicionesAdyacentes([R,C],Adyacentes),
+		verificarColorAdyacentes(Board,MiColor,Adyacentes),
 	 	siguientePosicion([R,C],Pos),
-		buscarNulas(Board,Pos,ListaAux),
-		Lista= [[R,C]|ListaAux].
-buscarNulas(Board,[R,C],Lista):-
+		buscarNulas(Board,Pos,MiColor,ListaAux),
+		ListaNulas=[[R,C]|ListaAux].
+
+buscarNulas(Board,[R,C],MiColor,Lista):-
 		[R,C]\=[18,18],
-		obtenerContenidoDePosicion(Board,[R,C],Contenido),
-		Contenido\= "-",
 		siguientePosicion([R,C],Pos),
-		buscarNulas(Board,Pos,Lista).
+		buscarNulas(Board,Pos,MiColor,Lista).
+
+
+
+verificarColorAdyacentes(Board,MiColor,[X|_]):-
+		obtenerContenidoDePosicion(Board,X,Contenido),
+		MiColor=Contenido.
+
+verificarColorAdyacentes(Board,MiColor,[_|Lista]):-
+		verificarColorAdyacentes(Board,MiColor,Lista).
 
 %
 %	diferencia(C1,C2,C)
@@ -275,13 +285,10 @@ diferencia([C|C1],C2,Conj):- member(C,C2),diferencia(C1,C2,Conj).
 %
 % Retorna en el conjunto de fichas nulas capturadas por las fichas blancas y negras.
 contarPuntaje(Board,CapturadasPorBlancas,CapturadasPorNegras):-
-		retractall(fichaVisitada(X)),
-		buscarNulas(Board,[0,0],ListaNulas),
-		capturarPosicionesNulas(Board,ListaNulas,"-","w",CapturadasPorBlancas),
-		retractall(fichaVisitada(X)),
-		capturarPosicionesNulas(Board,ListaNulas,"-","b",CapturadasPorNegras),
-		retractall(fichaVisitada(X)).
-
+		buscarNulas(Board,[0,0],"w",ListaNulasBlancas),
+		capturarPosicionesNulas(Board,ListaNulasBlancas,"-","w",CapturadasPorBlancas),
+		buscarNulas(Board,[0,0],"b",ListaNulasNegras),
+		capturarPosicionesNulas(Board,ListaNulasNegras,"-","b",CapturadasPorNegras).
 %
 %	capturarPosicionesNulas(+Board,+ListaNulas,+Rodeado,+ColorRodeador,-TotalCapturadas)
 %
@@ -289,7 +296,6 @@ contarPuntaje(Board,CapturadasPorBlancas,CapturadasPorNegras):-
 % fichas nulas rodeadas por el ColorRodeador.
 capturarPosicionesNulas(_Board,[],_Rodeado,_ColorRodeador,[]).
 capturarPosicionesNulas(Board,[Pos|ListaNula],Rodeado,ColorRodeador,TotalCapturados):-
-		not(fichaVisitada(Pos)),
 		conjuntoCapturado(Board,Pos,[],Rodeado,ColorRodeador,_TotalCapturadas,Capturadas),
 		diferencia([Pos|ListaNula],Capturadas,ListaNulaSinCapturadas),
 		capturarPosicionesNulas(Board,ListaNulaSinCapturadas,Rodeado,ColorRodeador,CapturadosParcial),
@@ -303,4 +309,4 @@ capturarPosicionesNulas(Board,[_Pos|ListaNula],Rodeado,ColorRodeador,TotalCaptur
 longitudLista([],0).
 longitudLista([_X|Lista],Long):- longitudLista(Lista,LL),Long is LL+1.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

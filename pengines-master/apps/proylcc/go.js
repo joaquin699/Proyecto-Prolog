@@ -13,7 +13,7 @@ var cantFichasNegras,cantFichasBlancas;
 var turnosPasados;
 var puntajeN, puntajeB;
 var finalizar;
-
+var waiting=false;
 
 /**
 * Initialization function. Requests to server, through pengines.js library,
@@ -72,6 +72,9 @@ function createBoard() {
 
 function handleCreate() {
     finalizar=false;
+    turnBlack= false;
+    bodyElem.className = turnBlack ? "turnBlack" : "turnWhite";
+    document.getElementById("passBtn").disabled=false;
     pengine.ask('emptyBoard(Board)');
 }
 
@@ -89,7 +92,8 @@ function handleSuccess(response) {
 
         puntajeN+= cantFichasNegras;
         puntajeB+= cantFichasBlancas;
-        alert("Estoy en Finalizar");
+        turnosPasados=0;
+
         imprimirPuntajes();
     }
     else{
@@ -112,6 +116,7 @@ function handleSuccess(response) {
         turnosPasados=0;
         pasarTurnoTablero();
     }
+    waiting=false;
 }
 
 /**
@@ -120,18 +125,24 @@ function handleSuccess(response) {
 
 function handleFailure() {
     alert("Invalid move!");
+    waiting=false;
 }
 
 /**
  * Handler for color click. Ask query to Pengines server.
  */
-
 function handleClick(row, col) {
     const s = "goMove(" + Pengine.stringify(gridData) + "," + Pengine.stringify(turnBlack ? "b" : "w") + "," + "[" + row + "," + col + "]" + ",Board)";
-    pengine.ask(s);
-    latestStone = [row, col];
+    if(!waiting){
+      pengine.ask(s);
+      waiting=true;
+      latestStone = [row, col];
+    }
 }
 
+/**
+* Funcion asociada al boton para pasar los turnos
+*/
 function switchTurn() {
     turnosPasados++;
     if(turnosPasados==2)
@@ -139,6 +150,9 @@ function switchTurn() {
     pasarTurnoTablero();
 }
 
+/*
+* Funcion para pasar el turno luego de una jugada realizada.
+*/
 function pasarTurnoTablero(){
     turnBlack = !turnBlack;
     bodyElem.className = turnBlack ? "turnBlack" : "turnWhite";
@@ -149,36 +163,30 @@ function pasarTurnoTablero(){
 function finalizarJuego(){
     finalizar= true;
     const puntaje= "contarPuntaje(" + Pengine.stringify(gridData) + ",PuntajeBlancas,PuntajeNegras)";
-    if(cantFichasNegras==0 && cantFichasBlancas==0){
-      puntajeB=0;
-      puntajeN=0;
-      imprimirPuntajes();
-    }
-    else{
+    document.getElementById("passBtn").disabled=true;
+    if(!waiting){
       pengine.ask(puntaje);
+      waiting=true;
     }
-    turnosPasados=0;
 }
 
+/*
+* Imprime los puntajes finales por pantalla indicando quien fue el ganador.
+*/
 function imprimirPuntajes(){
     if(cantFichasNegras>cantFichasBlancas){
-        alert("GANO JUGADOR NEGRO \nPuntaje= "+puntajeN);
+        alert("GANO JUGADOR NEGRO \nPuntaje= "+puntajeN +"\nPuntaje Blanco= "+ puntajeB);
     }
     else{
         if(cantFichasBlancas>cantFichasNegras){
-            alert("GANO JUGADOR BLANCO \nPuntaje= "+puntajeB);
+            alert("GANO JUGADOR BLANCO \nPuntaje= "+ puntajeB + "\nPuntaje Negro= "+ puntajeN);
         }
         else{
-            alert("EMPATE \nPuntaje Negro= "+puntajeN+"\nPuntaje Blanco= "+puntajeB);
+            alert("EMPATE \nPuntaje Negro= "+ puntajeN +"\nPuntaje Blanco= "+ puntajeB);
         }
     }
-    turnBlack= false;
-    bodyElem.className = turnBlack ? "turnBlack" : "turnWhite";
     handleCreate();
-
 }
-
-
 
 /**
 * Call init function after window loaded to ensure all HTML was created before
