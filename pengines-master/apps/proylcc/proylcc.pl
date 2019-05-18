@@ -173,7 +173,6 @@ sePuedeCapturar(Board,[Pos|Adyacentes],Rodeado,ColorRodeador):-
 		sePuedeCapturar(Board,Adyacentes,Rodeado,ColorRodeador).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % conjuntoCapturado(+Board,+Pos,+PosicionesVisitadas,+Rodeado,+ColorRodeador,-TotalVisitadas,-FichasCapturadas)
 %
@@ -206,7 +205,6 @@ estaCapturada(Board,Pos,PosicionesVisitadas,Rodeado,ColorContrario,TotalVisitada
 		obtenerContenidoDePosicion(Board,Pos,Rodeado),
 		conjuntoCapturado(Board,Pos,PosicionesVisitadas,Rodeado,ColorContrario,TotalVisitadas,FichasCapturadas).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %	obtenerFichasCapturadas(+Board,+Adyacentes,+Rodeado,+ColorRodeador,-FichasCapturadas)
 %
@@ -244,9 +242,7 @@ buscarNulas(Board,[18,18],MiColor,ListaNulas):-
 		obtenerPosicionesAdyacentes([18,18],Adyacentes),
 		verificarColorAdyacentes(Board,MiColor,Adyacentes),
 		ListaNulas=[[18,18]].
-
 buscarNulas(_,[18,18],_,[]).
-
 buscarNulas(Board,[R,C],MiColor,ListaNulas):-
 		[R,C]\=[18,18],
 		obtenerContenidoDePosicion(Board,[R,C],"-"),
@@ -255,18 +251,19 @@ buscarNulas(Board,[R,C],MiColor,ListaNulas):-
 	 	siguientePosicion([R,C],Pos),
 		buscarNulas(Board,Pos,MiColor,ListaAux),
 		ListaNulas=[[R,C]|ListaAux].
-
 buscarNulas(Board,[R,C],MiColor,Lista):-
 		[R,C]\=[18,18],
 		siguientePosicion([R,C],Pos),
 		buscarNulas(Board,Pos,MiColor,Lista).
 
 
-
+%
+% verificarColorAdyacentes(+Board,+ColorRodeador,+ListaAdyacentes)
+%
+% verifica si que al menos una de las posiciones adyacentes sea del ColorRodeador
 verificarColorAdyacentes(Board,MiColor,[X|_]):-
 		obtenerContenidoDePosicion(Board,X,Contenido),
 		MiColor=Contenido.
-
 verificarColorAdyacentes(Board,MiColor,[_|Lista]):-
 		verificarColorAdyacentes(Board,MiColor,Lista).
 
@@ -302,11 +299,3 @@ capturarPosicionesNulas(Board,[Pos|ListaNula],Rodeado,ColorRodeador,TotalCaptura
 		unirConjuntos(Capturadas,CapturadosParcial,TotalCapturados).
 capturarPosicionesNulas(Board,[_Pos|ListaNula],Rodeado,ColorRodeador,TotalCapturados):-
 		capturarPosicionesNulas(Board,ListaNula,Rodeado,ColorRodeador,TotalCapturados).
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-longitudLista([],0).
-longitudLista([_X|Lista],Long):- longitudLista(Lista,LL),Long is LL+1.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

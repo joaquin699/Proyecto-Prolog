@@ -19,7 +19,6 @@ var waiting=false;
 * Initialization function. Requests to server, through pengines.js library,
 * the creation of a Pengine instance, which will run Prolog code server-side.
 */
-
 function init() {
     document.getElementById("passBtn").addEventListener('click', () => switchTurn());
     bodyElem = document.getElementsByTagName('body')[0];
